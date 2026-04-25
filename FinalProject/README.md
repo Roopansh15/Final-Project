@@ -6,7 +6,7 @@
 ## 🔗 Hackathon Submission Links (Required for Judges)
 *   **Live Interactive Demo:** [Hugging Face Space - InboxWorld](https://huggingface.co/spaces/RoopanshSaxena/InboxWorld)
 *   **Presentation / Writeup:** [Hugging Face Blog](https://huggingface.co/spaces/RoopanshSaxena/InboxWorld/blob/main/README.md)
-*   **Colab Training Notebook:** [Colab](https://colab.research.google.com/drive/1MOfC5Vhf-HhFw5HK7KGRqfQ6nxBLxKVU?usp=sharing)
+*   **Colab Training Notebook:** [Colab]([https://colab.research.google.com/drive/1MOfC5Vhf-HhFw5HK7KGRqfQ6nxBLxKVU?usp=sharing](https://colab.research.google.com/drive/10X8eaNvIUb4h4z4I6yX1JekAZtHOSW8W?usp=sharing))
 ---
 
 ## 📖 The Story: Why We Built InboxWorld
