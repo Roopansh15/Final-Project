@@ -1,0 +1,217 @@
+{
+  "project": "InboxWorld",
+  "problem_statement": "Email triage environment with context-aware decision making and delayed business consequences.",
+  "theme_positioning": {
+    "primary": "Theme 3 - World Modeling",
+    "secondary": [
+      "Theme 1 - Multi-Agent Interactions",
+      "Theme 2 - Long-Horizon Planning"
+    ]
+  },
+  "scenarios": [
+    {
+      "scenario_id": "launch_week",
+      "description": "Inbox during a product launch with hidden blockers and competing priorities.",
+      "pending_tasks": [
+        "Ship launch assets before tomorrow 09:00",
+        "Send investor update by tonight 20:00"
+      ],
+      "drift_notes": [
+        "Implicit urgency hidden in a vendor message",
+        "Investor email sounds soft but still carries a same-day expectation"
+      ],
+      "email_count": 4
+    },
+    {
+      "scenario_id": "policy_drift",
+      "description": "Inbox after an escalation-policy change and a new VIP contact being introduced.",
+      "pending_tasks": [
+        "Protect renewal call scheduled tomorrow 08:30",
+        "Finalize partner contract today"
+      ],
+      "drift_notes": [
+        "Escalation policy changed for renewal risk",
+        "Legal became a new VIP contact during contract week"
+      ],
+      "email_count": 3
+    }
+  ],
+  "evaluations": {
+    "baseline": {
+      "episodes": [
+        {
+          "scenario_id": "launch_week",
+          "cumulative_reward": 2.0,
+          "priority_accuracy": 0.25,
+          "action_accuracy": 0.75,
+          "missed_urgent_count": 1,
+          "unnecessary_escalation_count": 0,
+          "events": [
+            {
+              "email_id": "email-1",
+              "reward": -1.5,
+              "predicted_priority": "low",
+              "predicted_action": "reply",
+              "expected_priority": "high",
+              "expected_action": "reply"
+            },
+            {
+              "email_id": "email-2",
+              "reward": 0.5,
+              "predicted_priority": "high",
+              "predicted_action": "draft",
+              "expected_priority": "medium",
+              "expected_action": "draft"
+            },
+            {
+              "email_id": "email-3",
+              "reward": 2.0,
+              "predicted_priority": "medium",
+              "predicted_action": "defer",
+              "expected_priority": "low",
+              "expected_action": "defer"
+            },
+            {
+              "email_id": "email-4",
+              "reward": 1.0,
+              "predicted_priority": "high",
+              "predicted_action": "draft",
+              "expected_priority": "high",
+              "expected_action": "escalate"
+            }
+          ]
+        },
+        {
+          "scenario_id": "policy_drift",
+          "cumulative_reward": -4.0,
+          "priority_accuracy": 0.67,
+          "action_accuracy": 0.0,
+          "missed_urgent_count": 1,
+          "unnecessary_escalation_count": 0,
+          "events": [
+            {
+              "email_id": "email-10",
+              "reward": -6.0,
+              "predicted_priority": "medium",
+              "predicted_action": "reply",
+              "expected_priority": "high",
+              "expected_action": "escalate"
+            },
+            {
+              "email_id": "email-11",
+              "reward": 1.0,
+              "predicted_priority": "low",
+              "predicted_action": "reply",
+              "expected_priority": "low",
+              "expected_action": "defer"
+            },
+            {
+              "email_id": "email-12",
+              "reward": 1.0,
+              "predicted_priority": "high",
+              "predicted_action": "draft",
+              "expected_priority": "high",
+              "expected_action": "reply"
+            }
+          ]
+        }
+      ],
+      "aggregate": {
+        "average_reward": -1.0,
+        "average_priority_accuracy": 0.46,
+        "average_action_accuracy": 0.38,
+        "missed_urgent_total": 2,
+        "unnecessary_escalation_total": 0,
+        "episodes_run": 2
+      }
+    },
+    "multi_agent": {
+      "episodes": [
+        {
+          "scenario_id": "launch_week",
+          "cumulative_reward": 22.0,
+          "priority_accuracy": 1.0,
+          "action_accuracy": 1.0,
+          "missed_urgent_count": 0,
+          "unnecessary_escalation_count": 0,
+          "events": [
+            {
+              "email_id": "email-1",
+              "reward": 5.5,
+              "predicted_priority": "high",
+              "predicted_action": "reply",
+              "expected_priority": "high",
+              "expected_action": "reply"
+            },
+            {
+              "email_id": "email-2",
+              "reward": 5.5,
+              "predicted_priority": "medium",
+              "predicted_action": "draft",
+              "expected_priority": "medium",
+              "expected_action": "draft"
+            },
+            {
+              "email_id": "email-3",
+              "reward": 5.5,
+              "predicted_priority": "low",
+              "predicted_action": "defer",
+              "expected_priority": "low",
+              "expected_action": "defer"
+            },
+            {
+              "email_id": "email-4",
+              "reward": 5.5,
+              "predicted_priority": "high",
+              "predicted_action": "escalate",
+              "expected_priority": "high",
+              "expected_action": "escalate"
+            }
+          ]
+        },
+        {
+          "scenario_id": "policy_drift",
+          "cumulative_reward": 12.0,
+          "priority_accuracy": 1.0,
+          "action_accuracy": 0.67,
+          "missed_urgent_count": 0,
+          "unnecessary_escalation_count": 0,
+          "events": [
+            {
+              "email_id": "email-10",
+              "reward": 5.5,
+              "predicted_priority": "high",
+              "predicted_action": "escalate",
+              "expected_priority": "high",
+              "expected_action": "escalate"
+            },
+            {
+              "email_id": "email-11",
+              "reward": 1.0,
+              "predicted_priority": "low",
+              "predicted_action": "draft",
+              "expected_priority": "low",
+              "expected_action": "defer"
+            },
+            {
+              "email_id": "email-12",
+              "reward": 5.5,
+              "predicted_priority": "high",
+              "predicted_action": "reply",
+              "expected_priority": "high",
+              "expected_action": "reply"
+            }
+          ]
+        }
+      ],
+      "aggregate": {
+        "average_reward": 17.0,
+        "average_priority_accuracy": 1.0,
+        "average_action_accuracy": 0.83,
+        "missed_urgent_total": 0,
+        "unnecessary_escalation_total": 0,
+        "episodes_run": 2
+      }
+    }
+  }
+}
