@@ -5,15 +5,36 @@ from dataclasses import asdict, replace
 from .types import EmailAgentAction, InboxEmail
 
 
+EMERGENCY_KEYWORDS = [
+    "heart attack",
+    "chest pain",
+    "can't breathe",
+    "cannot breathe",
+    "stroke",
+    "bleeding",
+    "unconscious",
+    "medical emergency",
+    "emergency",
+    "hospital",
+    "ambulance",
+    "call 911",
+]
+
+
 class ClassifierAgent:
     def classify(self, email: InboxEmail) -> dict[str, object]:
         combined = f"{email.subject} {email.body}".lower()
+        has_emergency_signal = any(keyword in combined for keyword in EMERGENCY_KEYWORDS)
         predicted_priority = "high" if email.sender_importance in {"boss", "client"} or "blocking" in combined else "medium"
         if email.visible_urgency:
             predicted_priority = "high"
         if email.priority == "low" or "no action needed" in combined or "dinner" in combined:
             predicted_priority = "low"
-        predicted_urgency = email.visible_urgency or any(w in combined for w in ["today", "immediately", "right now", "urgent", "asap"])
+        if has_emergency_signal:
+            predicted_priority = "high"
+            if "emergency" not in email.tags:
+                email.tags.append("emergency")
+        predicted_urgency = email.visible_urgency or has_emergency_signal or any(w in combined for w in ["today", "immediately", "right now", "urgent", "asap"])
         
         for keyword in ["milestone", "renewal", "revenue", "design", "contract"]:
             if keyword in combined and keyword not in email.tags:
@@ -40,7 +61,7 @@ class PriorityAgent:
             predicted_priority = "high"
         if "ambiguous" in email.tags and email.sender_importance in {"boss", "client"}:
             predicted_priority = "medium"
-        if email.sender_importance == "friend" and not email.urgency:
+        if email.sender_importance == "friend" and not email.urgency and "emergency" not in email.tags:
             predicted_priority = "low"
         return {
             "email_id": email.email_id,
@@ -54,7 +75,10 @@ class ResponderAgent:
         predicted_priority = str(priority_decision["predicted_priority"])
         predicted_urgency = bool(priority_decision["predicted_urgency"])
 
-        if predicted_priority == "high" and (
+        if "emergency" in email.tags:
+            action_type = "escalate_email"
+            tone = "urgent"
+        elif predicted_priority == "high" and (
             "milestone" in email.tags or "renewal" in email.tags or "revenue" in email.tags
         ):
             action_type = "escalate_email"
@@ -75,7 +99,9 @@ class ResponderAgent:
             action_type = "classify_email"
             tone = "neutral"
 
-        if action_type == "escalate_email":
+        if "emergency" in email.tags:
+            response_text = f"URGENT: {email.sender}, this sounds like a medical emergency. Please contact local emergency services immediately and alert someone nearby who can help right now."
+        elif action_type == "escalate_email":
             response_text = f"Forwarding to management: The email from {email.sender} requires immediate escalation to avoid negative downstream consequences. Please review."
         elif action_type == "generate_reply" and tone == "helpful":
             response_text = f"Hi {email.sender}, I am looking into this right now! Let me gather the necessary details and get back to you shortly."
@@ -95,6 +121,7 @@ class ResponderAgent:
             predicted_urgency=predicted_urgency,
             reply_tone=tone,
             response_text=response_text,
+            escalate_target="emergency_contact" if "emergency" in email.tags else "manager",
             metadata={"decision_trace": asdict(email)},
         )
 
@@ -103,6 +130,15 @@ class SupervisorAgent:
     def review(self, email: InboxEmail, proposed_action: EmailAgentAction) -> EmailAgentAction:
         if email.expected_action == "generate_reply" and proposed_action.action_type == "classify_email":
             return replace(proposed_action, action_type="generate_reply", reply_tone=email.expected_tone)
+        if "emergency" in email.tags:
+            return replace(
+                proposed_action,
+                action_type="escalate_email",
+                predicted_priority="high",
+                predicted_urgency=True,
+                reply_tone="urgent",
+                escalate_target="emergency_contact",
+            )
         if email.expected_action == "ignore_email" and email.priority == "low":
             return replace(proposed_action, action_type="ignore_email", reply_tone="neutral")
         if "design" in email.tags and proposed_action.action_type != "generate_reply":
